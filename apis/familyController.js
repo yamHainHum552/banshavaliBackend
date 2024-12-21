@@ -138,3 +138,35 @@ export const addSibling = async (req, res) => {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
+
+export const getFamilyMembers = async (req, res) => {
+  const { hierarchyId, userId } = req.params;
+
+  try {
+    const hierarchy = await Hierarchy.findOne({
+      _id: hierarchyId,
+      userId: userId,
+    });
+
+    if (!hierarchy) {
+      return res.status(403).json({
+        message: "Unauthorized access to this hierarchy.",
+        success: false,
+      });
+    }
+
+    const familyMembers = await FamilyMember.find({ hierarchyId });
+
+    res.status(200).json({
+      message: "Family members fetched successfully.",
+      success: true,
+      data: familyMembers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+      success: false,
+    });
+  }
+};

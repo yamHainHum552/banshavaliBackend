@@ -30,3 +30,32 @@ export const createHierarchy = async (req, res) => {
       .json({ message: "Server error", error: error.message, success: false });
   }
 };
+
+export const getHierarchy = async (req, res) => {
+  const { hierarchyId } = req.params;
+  try {
+    const hierarchy = await Hierarchy.findOne({
+      _id: hierarchyId,
+      userId: req.user.id,
+    });
+
+    if (!hierarchy) {
+      return res.status(404).json({
+        message: "Hierarchy not found",
+        success: false,
+      });
+    }
+
+    res.status(200).json({
+      message: "Hierarchy retrieved successfully",
+      success: true,
+      hierarchy,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+      success: false,
+    });
+  }
+};
