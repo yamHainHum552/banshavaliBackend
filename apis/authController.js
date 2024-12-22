@@ -28,27 +28,27 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   const { username, password } = req.body;
+
   try {
     const user = await User.findOne({ username });
-    if (!user)
+    if (!user) {
       return res
         .status(400)
         .json({ message: "Invalid credentials", success: false });
-
-    if (user.isFirstLogin) {
-      user.isFirstLogin = false;
-      await user.save();
     }
+
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
+    if (!isMatch) {
       return res
         .status(400)
         .json({ message: "Invalid credentials", success: false });
+    }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "7d",
     });
-    res.status(200).json({
+
+    const responsePayload = {
       message: "Logged in successfully!",
       token,
       user: {
@@ -58,11 +58,19 @@ export const login = async (req, res) => {
         isFirstLogin: user.isFirstLogin,
       },
       success: true,
-    });
+    };
+
+    if (user.isFirstLogin) {
+      user.isFirstLogin = false;
+      await user.save();
+    }
+
+    res.status(200).json(responsePayload);
   } catch (err) {
     res
       .status(500)
       .json({ message: "Server error", error: err.message, success: false });
   }
 };
-export const logout = async (req, res) => {};
+
+// export const logout = async (req, res) => {};
