@@ -30,7 +30,7 @@ app.post("/api/loginUser", login);
 
 // Hierarchy
 app.post("/api/registerHierarchy", AuthMiddleware, createHierarchy);
-app.get("/api/getHierarchy/:hierarchyId", AuthMiddleware, getHierarchy);
+app.get("/api/getHierarchy", AuthMiddleware, getHierarchy);
 
 // Family Member
 app.post("/api/registerParent", AuthMiddleware, addParent);

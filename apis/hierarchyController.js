@@ -32,10 +32,8 @@ export const createHierarchy = async (req, res) => {
 };
 
 export const getHierarchy = async (req, res) => {
-  const { hierarchyId } = req.params;
   try {
     const hierarchy = await Hierarchy.findOne({
-      _id: hierarchyId,
       userId: req.user.id,
     });
 
