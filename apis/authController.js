@@ -35,6 +35,10 @@ export const login = async (req, res) => {
         .status(400)
         .json({ message: "Invalid credentials", success: false });
 
+    if (user.isFirstLogin) {
+      user.isFirstLogin = false;
+      await user.save();
+    }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch)
       return res
@@ -56,6 +60,4 @@ export const login = async (req, res) => {
       .json({ message: "Server error", error: err.message, success: false });
   }
 };
-export const logout = async(req,res)=>{
-  
-} 
+export const logout = async (req, res) => {};
