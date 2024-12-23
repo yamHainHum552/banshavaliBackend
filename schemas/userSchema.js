@@ -6,6 +6,7 @@ const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   isFirstLogin: { type: Boolean, default: true },
+  image: { type: String },
 });
 
 const User = mongoose.model("User", userSchema);
