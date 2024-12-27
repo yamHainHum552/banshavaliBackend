@@ -170,3 +170,61 @@ export const getFamilyMembers = async (req, res) => {
     });
   }
 };
+
+export const deleteFamilyMember = async (req, res) => {
+  const { memberId } = req.params;
+
+  try {
+    const familyMember = await FamilyMember.findById(memberId);
+
+    if (!familyMember) {
+      return res
+        .status(404)
+        .json({ message: "Family member not found.", success: false });
+    }
+
+    const hierarchy = await Hierarchy.findById(familyMember.hierarchyId);
+    if (!hierarchy || hierarchy.userId.toString() !== req.user.id) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized action.", success: false });
+    }
+
+    if (familyMember.children.length > 0) {
+      if (familyMember.parent) {
+        await FamilyMember.updateMany(
+          { _id: { $in: familyMember.children } },
+          { $set: { parent: familyMember.parent } }
+        );
+
+        await FamilyMember.findByIdAndUpdate(familyMember.parent, {
+          $addToSet: { children: { $each: familyMember.children } },
+        });
+      } else {
+        await FamilyMember.updateMany(
+          { _id: { $in: familyMember.children } },
+          { $unset: { parent: "" } }
+        );
+      }
+    }
+
+    if (familyMember.parent) {
+      await FamilyMember.findByIdAndUpdate(familyMember.parent, {
+        $pull: { children: familyMember._id },
+      });
+    }
+
+    await FamilyMember.findByIdAndDelete(memberId);
+
+    res.status(200).json({
+      message: "Family member deleted successfully.",
+      success: true,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Server error",
+      error: err.message,
+      success: false,
+    });
+  }
+};

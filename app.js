@@ -8,6 +8,7 @@ import {
   addChild,
   addParent,
   addSibling,
+  deleteFamilyMember,
   getFamilyMembers,
 } from "./apis/familyController.js";
 
@@ -41,6 +42,7 @@ app.get(
   AuthMiddleware,
   getFamilyMembers
 );
+app.delete("/api/family-member/:memberId", AuthMiddleware, deleteFamilyMember);
 
 app.listen(3000, () => {
   console.log("Server running on 3000");
