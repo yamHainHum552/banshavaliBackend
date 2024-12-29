@@ -6,6 +6,7 @@ import { createHierarchy, getHierarchy } from "./apis/hierarchyController.js";
 import { AuthMiddleware } from "./middlewares/AuthMiddleWare.js";
 import {
   addChild,
+  addFirstFamilyMember,
   addParent,
   addSibling,
   deleteFamilyMember,
@@ -34,6 +35,7 @@ app.post("/api/registerHierarchy", AuthMiddleware, createHierarchy);
 app.get("/api/getHierarchy", AuthMiddleware, getHierarchy);
 
 // Family Member
+app.post("/api/registerFirstMember", AuthMiddleware, addFirstFamilyMember);
 app.post("/api/registerParent", AuthMiddleware, addParent);
 app.post("/api/registerChild", AuthMiddleware, addChild);
 app.post("/api/registerSibling", AuthMiddleware, addSibling);

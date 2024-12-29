@@ -228,3 +228,51 @@ export const deleteFamilyMember = async (req, res) => {
     });
   }
 };
+
+export const addFirstFamilyMember = async (req, res) => {
+  const { hierarchyId, name, isFemale } = req.body;
+
+  try {
+    // Check if the hierarchy exists
+    const hierarchy = await Hierarchy.findById(hierarchyId);
+    if (!hierarchy || hierarchy.userId.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "Unauthorized access to this hierarchy.",
+        success: false,
+      });
+    }
+
+    // Check if any family members already exist in this hierarchy
+    const existingFamilyMembers = await FamilyMember.find({ hierarchyId });
+    if (existingFamilyMembers.length > 0) {
+      return res.status(400).json({
+        message: "Family members already exist in this hierarchy.",
+        success: false,
+      });
+    }
+
+    // Add the first family member (root of the family tree)
+    const newFamilyMember = new FamilyMember({
+      userId: req.user.id,
+      hierarchyId,
+      name,
+      isFemale,
+      parent: null, // No parent since this is the first member
+      children: [], // No children initially
+    });
+
+    await newFamilyMember.save();
+
+    res.status(201).json({
+      message: "First family member added successfully.",
+      familyMember: newFamilyMember,
+      success: true,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+      success: false,
+    });
+  }
+};
