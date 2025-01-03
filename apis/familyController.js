@@ -276,3 +276,50 @@ export const addFirstFamilyMember = async (req, res) => {
     });
   }
 };
+export const editFamilyMember = async (req, res) => {
+  const { memberId } = req.params;
+  const { name, isFemale } = req.body;
+
+  try {
+    // Fetch the family member by ID
+    const familyMember = await FamilyMember.findById(memberId);
+
+    if (!familyMember) {
+      return res.status(404).json({
+        message: "Family member not found.",
+        success: false,
+      });
+    }
+
+    // Check if the user is authorized to edit this family member
+    const hierarchy = await Hierarchy.findById(familyMember.hierarchyId);
+    if (!hierarchy || hierarchy.userId.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "Unauthorized action.",
+        success: false,
+      });
+    }
+
+    // Update the family member information
+    if (name !== undefined) {
+      familyMember.name = name;
+    }
+    if (isFemale !== undefined) {
+      familyMember.isFemale = isFemale;
+    }
+
+    await familyMember.save();
+
+    res.status(200).json({
+      message: "Family member information updated successfully.",
+      success: true,
+      familyMember,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error: error.message,
+      success: false,
+    });
+  }
+};

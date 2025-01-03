@@ -23,6 +23,28 @@ const familyMemberSchema = new mongoose.Schema({
     },
   },
   isFemale: { type: Boolean, required: true },
+  isAlive: {
+    type: Boolean,
+    default: true,
+  },
+  occupation: {
+    type: String,
+    trim: true,
+  },
+  contactInfo: {
+    phone: {
+      type: String,
+      trim: true,
+    },
+    email: {
+      type: String,
+      trim: true,
+    },
+  },
+  address: {
+    type: String,
+    trim: true,
+  },
 });
 
 const FamilyMember = mongoose.model("FamilyMember", familyMemberSchema);

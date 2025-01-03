@@ -10,6 +10,7 @@ import {
   addParent,
   addSibling,
   deleteFamilyMember,
+  editFamilyMember,
   getFamilyMembers,
 } from "./apis/familyController.js";
 
@@ -44,6 +45,7 @@ app.get(
   AuthMiddleware,
   getFamilyMembers
 );
+app.put("/api/editFamilyMember/:memberId", AuthMiddleware, editFamilyMember);
 app.delete("/api/family-member/:memberId", AuthMiddleware, deleteFamilyMember);
 
 app.listen(3000, () => {
