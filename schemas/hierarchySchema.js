@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 const hierarchySchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
   familyName: { type: String, required: true },
+  placeOfOrigin: { type: String, requried: true },
 });
 
 const Hierarchy = mongoose.model("Hierarchy", hierarchySchema);

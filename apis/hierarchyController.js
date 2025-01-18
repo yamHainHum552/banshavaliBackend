@@ -1,7 +1,7 @@
 import Hierarchy from "../schemas/hierarchySchema.js";
 
 export const createHierarchy = async (req, res) => {
-  const { familyName } = req.body;
+  const { familyName, placeOfOrigin } = req.body;
 
   try {
     const existingHierarchy = await Hierarchy.findOne({ familyName });
@@ -15,6 +15,7 @@ export const createHierarchy = async (req, res) => {
     const hierarchy = new Hierarchy({
       userId: req.user.id,
       familyName,
+      placeOfOrigin,
     });
 
     await hierarchy.save();
