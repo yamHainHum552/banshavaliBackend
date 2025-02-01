@@ -63,7 +63,6 @@ export const getHierarchy = async (req, res) => {
 export const getMatchedHierarchUsers = async (req, res) => {
   try {
     const { familyName, placeOfOrigin } = req.params;
-    console.log(req.params);
 
     // Validate input
     if (!familyName || !placeOfOrigin) {
@@ -92,7 +91,7 @@ export const getMatchedHierarchUsers = async (req, res) => {
       const user = hierarchy.userId;
       return {
         userId: user._id,
-        name: user.name,
+        username: user.username,
         email: user.email,
         familyName: hierarchy.familyName,
         placeOfOrigin: hierarchy.placeOfOrigin,
