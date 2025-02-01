@@ -2,7 +2,11 @@ import express from "express";
 import cors from "cors";
 import { dbConnect } from "./db/connectToMongo.js";
 import { login, register } from "./apis/authController.js";
-import { createHierarchy, getHierarchy } from "./apis/hierarchyController.js";
+import {
+  createHierarchy,
+  getHierarchy,
+  getMatchedHierarchUsers,
+} from "./apis/hierarchyController.js";
 import { AuthMiddleware } from "./middlewares/AuthMiddleWare.js";
 import {
   addChild,
@@ -34,6 +38,11 @@ app.post("/api/loginUser", login);
 // Hierarchy
 app.post("/api/registerHierarchy", AuthMiddleware, createHierarchy);
 app.get("/api/getHierarchy", AuthMiddleware, getHierarchy);
+app.get(
+  "/api/getUsers/:familyName/:placeOfOrigin",
+  AuthMiddleware,
+  getMatchedHierarchUsers
+);
 
 // Family Member
 app.post("/api/registerFirstMember", AuthMiddleware, addFirstFamilyMember);
