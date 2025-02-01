@@ -5,14 +5,6 @@ export const createHierarchy = async (req, res) => {
   const { familyName, placeOfOrigin } = req.body;
 
   try {
-    const existingHierarchy = await Hierarchy.findOne({ familyName });
-    if (existingHierarchy) {
-      return res.status(400).json({
-        message: "Hierarchy name already exists. Please choose another name.",
-        success: false,
-      });
-    }
-
     const hierarchy = new Hierarchy({
       userId: req.user.id,
       familyName,
@@ -59,7 +51,6 @@ export const getHierarchy = async (req, res) => {
     });
   }
 };
-
 export const getMatchedHierarchUsers = async (req, res) => {
   try {
     const { familyName, placeOfOrigin } = req.params;
@@ -86,17 +77,40 @@ export const getMatchedHierarchUsers = async (req, res) => {
       });
     }
 
-    // Extract and format user details
-    const matchedUsers = users.map((hierarchy) => {
-      const user = hierarchy.userId;
-      return {
-        userId: user._id,
-        username: user.username,
-        email: user.email,
-        familyName: hierarchy.familyName,
-        placeOfOrigin: hierarchy.placeOfOrigin,
-      };
-    });
+    // Get the calling user's ID (assuming it's available on req.user)
+    const callingUserId = req.user?._id;
+
+    // Extract, format, and filter out the calling user
+    const matchedUsers = users
+      .filter((hierarchy) => {
+        // Exclude the calling user if found
+        if (
+          callingUserId &&
+          hierarchy.userId._id.toString() === callingUserId.toString()
+        ) {
+          return false;
+        }
+        return true;
+      })
+      .map((hierarchy) => {
+        const user = hierarchy.userId;
+        return {
+          userId: user._id,
+          username: user.username,
+          email: user.email,
+          familyName: hierarchy.familyName,
+          placeOfOrigin: hierarchy.placeOfOrigin,
+        };
+      });
+
+    // If filtering out the calling user results in an empty list, return a 404 response
+    if (matchedUsers.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "No other users found with the provided family name and place of origin.",
+      });
+    }
 
     // Return the matched users
     res.status(200).json({
