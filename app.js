@@ -17,6 +17,11 @@ import {
   editFamilyMember,
   getFamilyMembers,
 } from "./apis/familyController.js";
+import {
+  getAllRequests,
+  requestRespond,
+  sendRequest,
+} from "./apis/friendRequestController.js";
 
 const app = express();
 app.use(cors());
@@ -56,6 +61,11 @@ app.get(
 );
 app.put("/api/editFamilyMember/:memberId", AuthMiddleware, editFamilyMember);
 app.delete("/api/family-member/:memberId", AuthMiddleware, deleteFamilyMember);
+
+// Friend Request
+app.get("/api/requests/:userId", AuthMiddleware, getAllRequests);
+app.post("/api/sendRequest", AuthMiddleware, sendRequest);
+app.post("/api/respondRequest", AuthMiddleware, requestRespond);
 
 app.listen(3000, () => {
   console.log("Server running on 3000");
