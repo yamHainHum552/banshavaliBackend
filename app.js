@@ -19,6 +19,7 @@ import {
 } from "./apis/familyController.js";
 import {
   getAllRequests,
+  getFriendList,
   requestRespond,
   sendRequest,
 } from "./apis/friendRequestController.js";
@@ -64,6 +65,7 @@ app.delete("/api/family-member/:memberId", AuthMiddleware, deleteFamilyMember);
 
 // Friend Request
 app.get("/api/requests/:userId", AuthMiddleware, getAllRequests);
+app.get("/api/friends/:userId", AuthMiddleware, getFriendList);
 app.post("/api/sendRequest", AuthMiddleware, sendRequest);
 app.post("/api/respondRequest", AuthMiddleware, requestRespond);
 

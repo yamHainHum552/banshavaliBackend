@@ -48,8 +48,37 @@ export const getAllRequests = async (req, res) => {
     const requests = await FriendRequest.find({
       receiverId: userId,
       status: "pending",
-    }).populate("senderId", "name email");
+    }).populate("senderId", "username email");
     res.json(requests);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const getFriendList = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    const friends = await FriendRequest.find({
+      $or: [{ senderId: userId }, { receiverId: userId }],
+      status: "accepted",
+    })
+      .populate("senderId", "username email")
+      .populate("receiverId", "username email");
+
+    // Use a Set to store unique friend IDs
+    const uniqueFriends = new Map();
+
+    friends.forEach((friend) => {
+      const friendData =
+        friend.senderId._id.toString() === userId
+          ? friend.receiverId
+          : friend.senderId;
+
+      uniqueFriends.set(friendData._id.toString(), friendData);
+    });
+
+    res.json([...uniqueFriends.values()]);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
