@@ -1,3 +1,4 @@
+import FriendRequest from "../schemas/friendRequest.js";
 import Hierarchy from "../schemas/hierarchySchema.js";
 import User from "../schemas/userSchema.js";
 
@@ -51,11 +52,19 @@ export const getHierarchy = async (req, res) => {
     });
   }
 };
+
 export const getMatchedHierarchUsers = async (req, res) => {
   try {
-    const { familyName, placeOfOrigin } = req.params;
+    const { familyName, placeOfOrigin, userId } = req.params;
+    const callingUserId = userId;
 
-    // Validate input
+    if (!callingUserId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized request. User ID is missing.",
+      });
+    }
+
     if (!familyName || !placeOfOrigin) {
       return res.status(400).json({
         success: false,
@@ -63,12 +72,11 @@ export const getMatchedHierarchUsers = async (req, res) => {
       });
     }
 
-    // Find users with matching familyName and placeOfOrigin
+    // Fetch users who match familyName and placeOfOrigin
     const users = await Hierarchy.find({ familyName, placeOfOrigin }).populate(
       "userId"
     );
 
-    // If no users are found, return a 404 response
     if (!users || users.length === 0) {
       return res.status(404).json({
         success: false,
@@ -77,42 +85,52 @@ export const getMatchedHierarchUsers = async (req, res) => {
       });
     }
 
-    // Get the calling user's ID (assuming it's available on req.user)
-    const callingUserId = req.user?._id;
+    // Fetch friends of calling user
+    const friends = await FriendRequest.find({
+      $or: [{ senderId: callingUserId }, { receiverId: callingUserId }],
+      status: "accepted",
+    });
 
-    // Extract, format, and filter out the calling user
+    // Extract friend IDs safely
+    const friendIds = new Set();
+    friends.forEach((friend) => {
+      if (friend.senderId && friend.receiverId) {
+        const sender = friend.senderId.toString();
+        const receiver = friend.receiverId.toString();
+
+        if (sender === callingUserId.toString()) {
+          friendIds.add(receiver);
+        } else {
+          friendIds.add(sender);
+        }
+      }
+    });
+
+    // Filter out friends and calling user
     const matchedUsers = users
       .filter((hierarchy) => {
-        // Exclude the calling user if found
-        if (
-          callingUserId &&
-          hierarchy.userId._id.toString() === callingUserId.toString()
-        ) {
-          return false;
-        }
-        return true;
+        if (!hierarchy.userId || !hierarchy.userId._id) return false; // Ensure userId exists
+        const userIdStr = hierarchy.userId._id.toString();
+        return (
+          userIdStr !== callingUserId.toString() && !friendIds.has(userIdStr)
+        );
       })
-      .map((hierarchy) => {
-        const user = hierarchy.userId;
-        return {
-          userId: user._id,
-          username: user.username,
-          email: user.email,
-          familyName: hierarchy.familyName,
-          placeOfOrigin: hierarchy.placeOfOrigin,
-        };
-      });
+      .map((hierarchy) => ({
+        userId: hierarchy.userId._id,
+        username: hierarchy.userId.username,
+        email: hierarchy.userId.email,
+        familyName: hierarchy.familyName,
+        placeOfOrigin: hierarchy.placeOfOrigin,
+      }));
 
-    // If filtering out the calling user results in an empty list, return a 404 response
     if (matchedUsers.length === 0) {
       return res.status(404).json({
         success: false,
         message:
-          "No other users found with the provided family name and place of origin.",
+          "No non-friend users found with the provided family name and place of origin.",
       });
     }
 
-    // Return the matched users
     res.status(200).json({
       success: true,
       message: "Matched users retrieved successfully.",

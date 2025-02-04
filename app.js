@@ -45,7 +45,7 @@ app.post("/api/loginUser", login);
 app.post("/api/registerHierarchy", AuthMiddleware, createHierarchy);
 app.get("/api/getHierarchy", AuthMiddleware, getHierarchy);
 app.get(
-  "/api/getUsers/:familyName/:placeOfOrigin",
+  "/api/getUsers/:familyName/:placeOfOrigin/:userId",
   AuthMiddleware,
   getMatchedHierarchUsers
 );
