@@ -56,7 +56,7 @@ app.post("/api/registerParent", AuthMiddleware, addParent);
 app.post("/api/registerChild", AuthMiddleware, addChild);
 app.post("/api/registerSibling", AuthMiddleware, addSibling);
 app.get(
-  "/api/hierarchy/:hierarchyId/user/:userId/family",
+  "/api/hierarchy/:familyName/user/:userId/family",
   AuthMiddleware,
   getFamilyMembers
 );

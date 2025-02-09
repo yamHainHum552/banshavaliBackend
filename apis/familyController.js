@@ -140,11 +140,11 @@ export const addSibling = async (req, res) => {
 };
 
 export const getFamilyMembers = async (req, res) => {
-  const { hierarchyId, userId } = req.params;
+  const { familyName, userId } = req.params;
 
   try {
     const hierarchy = await Hierarchy.findOne({
-      _id: hierarchyId,
+      familyName,
       userId: userId,
     });
 
@@ -154,6 +154,7 @@ export const getFamilyMembers = async (req, res) => {
         success: false,
       });
     }
+    const hierarchyId = hierarchy._id;
 
     const familyMembers = await FamilyMember.find({ hierarchyId });
 
