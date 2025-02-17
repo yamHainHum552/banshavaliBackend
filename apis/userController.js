@@ -3,7 +3,6 @@ import { uploadOnCloudinary, deleteImage } from "../utils/cloudinary.js";
 
 export const uploadUserImage = async (req, res) => {
   const { userId } = req.body;
-  console.log(userId); // Ensure userId is sent in the request body
 
   try {
     if (!req.file) {

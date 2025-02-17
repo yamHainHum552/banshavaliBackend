@@ -63,8 +63,8 @@ export const getFriendList = async (req, res) => {
       $or: [{ senderId: userId }, { receiverId: userId }],
       status: "accepted",
     })
-      .populate("senderId", "username email")
-      .populate("receiverId", "username email");
+      .populate("senderId", "username email image")
+      .populate("receiverId", "username email image");
 
     // Use a Set to store unique friend IDs
     const uniqueFriends = new Map();
