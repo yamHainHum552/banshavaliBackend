@@ -121,6 +121,7 @@ export const getMatchedHierarchUsers = async (req, res) => {
         email: hierarchy.userId.email,
         familyName: hierarchy.familyName,
         placeOfOrigin: hierarchy.placeOfOrigin,
+        image: hierarchy.userId.image,
       }));
 
     if (matchedUsers.length === 0) {

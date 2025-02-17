@@ -48,7 +48,7 @@ export const getAllRequests = async (req, res) => {
     const requests = await FriendRequest.find({
       receiverId: userId,
       status: "pending",
-    }).populate("senderId", "username email");
+    }).populate("senderId", "username email image");
     res.json(requests);
   } catch (error) {
     res.status(500).json({ error: error.message });
