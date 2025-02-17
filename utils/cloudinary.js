@@ -6,46 +6,59 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (file, folder) => {
-  try {
-    const buffer = await file.arrayBuffer();
-    const bytes = Buffer.from(buffer);
+// const uploadOnCloudinary = async (file, folder) => {
+//   try {
+//     const buffer = await file.arrayBuffer();
+//     const bytes = Buffer.from(buffer);
 
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          resource_type: "auto",
-          folder,
-        },
-        (error, result) => {
-          if (error) {
-            return reject(error.message);
-          }
-          return resolve(result);
-        }
-      );
+//     return new Promise((resolve, reject) => {
+//       const uploadStream = cloudinary.uploader.upload_stream(
+//         {
+//           resource_type: "auto",
+//           folder,
+//         },
+//         (error, result) => {
+//           if (error) {
+//             return reject(error.message);
+//           }
+//           return resolve(result);
+//         }
+//       );
 
-      const stream = require("stream");
-      const bufferStream = new stream.PassThrough();
-      bufferStream.end(bytes);
-      bufferStream.pipe(uploadStream);
-    });
-  } catch (error) {
-    throw new Error(`Failed to upload file: ${error.message}`);
-  }
-};
-const deleteImage = async (id) => {
-  return new Promise(async (resolve, reject) => {
-    await cloudinary.api.delete_resources(
-      [`userImages/${id}`],
-      async (err, result) => {
-        if (err) {
-          return reject(err.message);
+//       const stream = require("stream");
+//       const bufferStream = new stream.PassThrough();
+//       bufferStream.end(bytes);
+//       bufferStream.pipe(uploadStream);
+//     });
+//   } catch (error) {
+//     throw new Error(`Failed to upload file: ${error.message}`);
+//   }
+// };
+
+const uploadOnCloudinary = async (fileBuffer, folder) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader
+      .upload_stream({ folder, resource_type: "auto" }, (error, result) => {
+        if (error) {
+          reject(error);
         } else {
-          return resolve(result);
+          resolve(result);
         }
+      })
+      .end(fileBuffer);
+  });
+};
+const deleteImage = async (publicId) => {
+  return new Promise((resolve, reject) => {
+    cloudinary.api.delete_resources([publicId], (err, result) => {
+      if (err) {
+        console.error("Error deleting image from Cloudinary:", err.message);
+        reject(err.message);
+      } else {
+        console.log("Image deleted successfully:", result);
+        resolve(result);
       }
-    );
+    });
   });
 };
 

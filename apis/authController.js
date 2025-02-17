@@ -45,7 +45,7 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "2d",
     });
 
     const responsePayload = {
@@ -56,6 +56,7 @@ export const login = async (req, res) => {
         username: user.username,
         email: user.email,
         isFirstLogin: user.isFirstLogin,
+        image: user.image.url,
       },
       success: true,
     };
