@@ -1,5 +1,6 @@
 import FamilyMember from "../schemas/familyMemberSchema.js";
 import Hierarchy from "../schemas/hierarchySchema.js";
+import { uploadOnCloudinary, deleteImage } from "../utils/cloudinary.js";
 
 export const addParent = async (req, res) => {
   const { hierarchyId, name, isFemale, childIds } = req.body;
@@ -157,6 +158,7 @@ export const getFamilyMembers = async (req, res) => {
     const hierarchyId = hierarchy._id;
 
     const familyMembers = await FamilyMember.find({ hierarchyId });
+    // console.log(familyMembers);
 
     res.status(200).json({
       message: "Family members fetched successfully.",
@@ -277,50 +279,73 @@ export const addFirstFamilyMember = async (req, res) => {
     });
   }
 };
+
 export const editFamilyMember = async (req, res) => {
-  const { memberId } = req.params;
-  const { name, isFemale } = req.body;
-
   try {
-    // Fetch the family member by ID
-    const familyMember = await FamilyMember.findById(memberId);
+    const { memberId } = req.params;
+    const { name, isFemale, isAlive, profession, phone, email, address } =
+      req.body;
 
+    // Find the family member
+    const familyMember = await FamilyMember.findById(memberId);
     if (!familyMember) {
       return res.status(404).json({
-        message: "Family member not found.",
         success: false,
+        message: "Family member not found.",
       });
     }
+    console.log(familyMember);
 
     // Check if the user is authorized to edit this family member
-    const hierarchy = await Hierarchy.findById(familyMember.hierarchyId);
-    if (!hierarchy || hierarchy.userId.toString() !== req.user.id) {
-      return res.status(403).json({
-        message: "Unauthorized action.",
-        success: false,
-      });
+    // const hierarchy = await Hierarchy.findById(familyMember.hierarchyId);
+    // if (!hierarchy || hierarchy.userId.toString() !== req.user.id) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     message: "Unauthorized action.",
+    //   });
+    // }
+
+    // Update text fields
+    if (name !== undefined) familyMember.name = name;
+    if (isFemale !== undefined) familyMember.isFemale = isFemale;
+    if (isAlive !== undefined) familyMember.isAlive = isAlive;
+    if (profession !== undefined) familyMember.profession = profession;
+    if (phone !== undefined) familyMember.phone = phone;
+    if (email !== undefined) familyMember.email = email;
+    if (address !== undefined) familyMember.address = address;
+
+    // Handle image upload if a file is provided
+    if (req.file) {
+      const folder = `familyMembers/${memberId}`;
+
+      // Upload new image to Cloudinary
+      const result = await uploadOnCloudinary(req.file.buffer, folder);
+
+      // Delete old image from Cloudinary if it exists
+      if (familyMember.image?.publicId) {
+        await deleteImage(familyMember.image.publicId);
+      }
+
+      // Update the image URL and publicId in the database
+      familyMember.image = {
+        url: result.secure_url,
+        publicId: result.public_id,
+      };
     }
 
-    // Update the family member information
-    if (name !== undefined) {
-      familyMember.name = name;
-    }
-    if (isFemale !== undefined) {
-      familyMember.isFemale = isFemale;
-    }
-
+    // Save the updated family member
     await familyMember.save();
 
     res.status(200).json({
-      message: "Family member information updated successfully.",
       success: true,
-      familyMember,
+      message: "Family member updated successfully.",
+      data: familyMember,
     });
   } catch (error) {
     res.status(500).json({
-      message: "Server error",
-      error: error.message,
       success: false,
+      message: "Server error.",
+      error: error.message,
     });
   }
 };

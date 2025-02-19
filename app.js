@@ -68,7 +68,12 @@ app.get(
   AuthMiddleware,
   getFamilyMembers
 );
-app.put("/api/editFamilyMember/:memberId", AuthMiddleware, editFamilyMember);
+app.put(
+  "/api/editFamilyMember/:memberId",
+  AuthMiddleware,
+  upload.single("memberImage"),
+  editFamilyMember
+);
 app.delete("/api/family-member/:memberId", AuthMiddleware, deleteFamilyMember);
 
 // Friend Requests

@@ -85,34 +85,34 @@ export const getMatchedHierarchUsers = async (req, res) => {
       });
     }
 
-    // Fetch friends of calling user
-    const friends = await FriendRequest.find({
+    // Fetch all friend requests involving the calling user (both sent and received)
+    const friendRequests = await FriendRequest.find({
       $or: [{ senderId: callingUserId }, { receiverId: callingUserId }],
-      status: "accepted",
     });
 
-    // Extract friend IDs safely
-    const friendIds = new Set();
-    friends.forEach((friend) => {
-      if (friend.senderId && friend.receiverId) {
-        const sender = friend.senderId.toString();
-        const receiver = friend.receiverId.toString();
+    // Extract friend IDs (both accepted and pending)
+    const excludedUserIds = new Set();
+    friendRequests.forEach((request) => {
+      if (request.status === "accepted" || request.status === "pending") {
+        const sender = request.senderId.toString();
+        const receiver = request.receiverId.toString();
 
         if (sender === callingUserId.toString()) {
-          friendIds.add(receiver);
+          excludedUserIds.add(receiver);
         } else {
-          friendIds.add(sender);
+          excludedUserIds.add(sender);
         }
       }
     });
 
-    // Filter out friends and calling user
+    // Filter out friends, pending requests, and calling user itself
     const matchedUsers = users
       .filter((hierarchy) => {
         if (!hierarchy.userId || !hierarchy.userId._id) return false; // Ensure userId exists
         const userIdStr = hierarchy.userId._id.toString();
         return (
-          userIdStr !== callingUserId.toString() && !friendIds.has(userIdStr)
+          userIdStr !== callingUserId.toString() &&
+          !excludedUserIds.has(userIdStr)
         );
       })
       .map((hierarchy) => ({
@@ -128,7 +128,7 @@ export const getMatchedHierarchUsers = async (req, res) => {
       return res.status(404).json({
         success: false,
         message:
-          "No non-friend users found with the provided family name and place of origin.",
+          "No users found who are not yet friends and do not have pending friend requests.",
       });
     }
 

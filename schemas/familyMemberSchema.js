@@ -27,27 +27,27 @@ const familyMemberSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  occupation: {
+  profession: {
     type: String,
     trim: true,
   },
-  contactInfo: {
-    phone: {
-      type: String,
-      trim: true,
-    },
-    email: {
-      type: String,
-      trim: true,
-    },
+
+  phone: {
+    type: String,
+    trim: true,
   },
+  email: {
+    type: String,
+    trim: true,
+  },
+
   address: {
     type: String,
     trim: true,
   },
   image: {
-    type: String,
-    default: "",
+    url: { type: String, default: "" },
+    publicId: { type: String, default: "" },
   },
 });
 
