@@ -1,3 +1,4 @@
+import NameLocation from "../schemas/namelocationSchema.js";
 import User from "../schemas/userSchema.js";
 import { uploadOnCloudinary, deleteImage } from "../utils/cloudinary.js";
 
@@ -47,5 +48,46 @@ export const uploadUserImage = async (req, res) => {
       error: error.message,
       success: false,
     });
+  }
+};
+
+export const getFamilyNameLocation = async (req, res) => {
+  try {
+    const nameLocations = await NameLocation.find(
+      {},
+      "familyName placeOfOrigin"
+    );
+    res.status(200).json({ success: true, data: nameLocations });
+  } catch (error) {
+    console.error("Error fetching name locations:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+export const postFamilyNameLocation = async (req, res) => {
+  try {
+    const { familyName, placeOfOrigin } = req.body;
+
+    // Check if both fields are provided
+    if (!familyName || !placeOfOrigin) {
+      return res.status(400).json({
+        success: false,
+        message: "Both familyName and placeOfOrigin are required.",
+      });
+    }
+
+    // Create a new entry
+    const newNameLocation = new NameLocation({ familyName, placeOfOrigin });
+
+    // Save to the database
+    await newNameLocation.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Family name and place of origin added successfully.",
+      data: newNameLocation,
+    });
+  } catch (error) {
+    console.error("Error adding name location:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

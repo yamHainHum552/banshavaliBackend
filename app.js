@@ -24,7 +24,11 @@ import {
   requestRespond,
   sendRequest,
 } from "./apis/friendRequestController.js";
-import { uploadUserImage } from "./apis/userController.js"; // Import the upload function
+import {
+  getFamilyNameLocation,
+  postFamilyNameLocation,
+  uploadUserImage,
+} from "./apis/userController.js"; // Import the upload function
 
 const app = express();
 app.use(cors());
@@ -70,7 +74,7 @@ app.get(
 );
 app.put(
   "/api/editFamilyMember/:memberId",
-  AuthMiddleware,
+  // AuthMiddleware,
   upload.single("memberImage"),
   editFamilyMember
 );
@@ -89,6 +93,8 @@ app.post(
   upload.single("file"),
   uploadUserImage
 );
+app.get("/api/getFamilyNameLocation", getFamilyNameLocation);
+app.post("/api/postFamilyNameLocation", postFamilyNameLocation);
 
 // Start the server
 app.listen(3000, () => {
