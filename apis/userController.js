@@ -53,20 +53,25 @@ export const uploadUserImage = async (req, res) => {
 
 export const getFamilyNameLocation = async (req, res) => {
   try {
-    const nameLocations = await NameLocation.find(
-      {},
-      "familyName placeOfOrigin"
-    );
-    res.status(200).json({ success: true, data: nameLocations });
+    // Fetch distinct family names and places of origin
+    const familyNames = await NameLocation.distinct("familyName");
+    const placesOfOrigin = await NameLocation.distinct("placeOfOrigin");
+
+    res.status(200).json({
+      success: true,
+      data: { familyNames, placesOfOrigin },
+    });
   } catch (error) {
     console.error("Error fetching name locations:", error);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
 export const postFamilyNameLocation = async (req, res) => {
   try {
     const { familyName, placeOfOrigin } = req.body;
 
+    // Check if both fields are provided
     if (!familyName || !placeOfOrigin) {
       return res.status(400).json({
         success: false,
@@ -74,36 +79,16 @@ export const postFamilyNameLocation = async (req, res) => {
       });
     }
 
-    // Check if familyName or placeOfOrigin already exists separately
-    const existingFamily = await NameLocation.findOne({ familyName });
-    const existingPlace = await NameLocation.findOne({ placeOfOrigin });
+    // Create a new entry
+    const newNameLocation = new NameLocation({ familyName, placeOfOrigin });
 
-    if (existingFamily && existingPlace) {
-      return res.status(409).json({
-        success: false,
-        message: "Both family name and place of origin already exist.",
-      });
-    }
-
-    // Determine what needs to be added
-    let newEntries = [];
-    if (!existingFamily) newEntries.push({ familyName, placeOfOrigin: null });
-    if (!existingPlace) newEntries.push({ familyName: null, placeOfOrigin });
-
-    if (newEntries.length === 0) {
-      return res.status(409).json({
-        success: false,
-        message: "No new values to add.",
-      });
-    }
-
-    // Insert only new values
-    const insertedEntries = await NameLocation.insertMany(newEntries);
+    // Save to the database
+    await newNameLocation.save();
 
     res.status(201).json({
       success: true,
-      message: "Successfully added new values.",
-      data: insertedEntries,
+      message: "Family name and place of origin added successfully.",
+      data: newNameLocation,
     });
   } catch (error) {
     console.error("Error adding name location:", error);
