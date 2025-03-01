@@ -67,7 +67,6 @@ export const postFamilyNameLocation = async (req, res) => {
   try {
     const { familyName, placeOfOrigin } = req.body;
 
-    // Check if both fields are provided
     if (!familyName || !placeOfOrigin) {
       return res.status(400).json({
         success: false,
@@ -75,10 +74,20 @@ export const postFamilyNameLocation = async (req, res) => {
       });
     }
 
-    // Create a new entry
+    const existingEntry = await NameLocation.findOne({
+      familyName,
+      placeOfOrigin,
+    });
+
+    if (existingEntry) {
+      return res.status(409).json({
+        success: false,
+        message: "This family name and place of origin already exist.",
+      });
+    }
+
     const newNameLocation = new NameLocation({ familyName, placeOfOrigin });
 
-    // Save to the database
     await newNameLocation.save();
 
     res.status(201).json({

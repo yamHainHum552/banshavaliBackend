@@ -74,7 +74,7 @@ app.get(
 );
 app.put(
   "/api/editFamilyMember/:memberId",
-  // AuthMiddleware,
+  AuthMiddleware,
   upload.single("memberImage"),
   editFamilyMember
 );
@@ -93,8 +93,8 @@ app.post(
   upload.single("file"),
   uploadUserImage
 );
-app.get("/api/getFamilyNameLocation", getFamilyNameLocation);
-app.post("/api/postFamilyNameLocation", postFamilyNameLocation);
+app.get("/api/getFamilyNameLocation", AuthMiddleware, getFamilyNameLocation);
+app.post("/api/postFamilyNameLocation", AuthMiddleware, postFamilyNameLocation);
 
 // Start the server
 app.listen(3000, () => {
